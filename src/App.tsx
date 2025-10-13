@@ -2,17 +2,15 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 
 function App() {
-  // State variables for user inputs
   const [billAmount, setBillAmount] = useState<string>('');
   const [tipPercentage, setTipPercentage] = useState<number>(0);
   const [customTip, setCustomTip] = useState<string>('');
   const [numberOfPeople, setNumberOfPeople] = useState<string>('');
+  const [showPeopleError, setShowPeopleError] = useState<boolean>(false);
   
-  // Calculated values
   const [tipAmountPerPerson, setTipAmountPerPerson] = useState<number>(0);
   const [totalPerPerson, setTotalPerPerson] = useState<number>(0);
 
-  // Calculate tip and total whenever inputs change
   useEffect(() => {
     calculateTip();
   }, [billAmount, tipPercentage, customTip, numberOfPeople]);
@@ -21,13 +19,11 @@ function App() {
     const bill = parseFloat(billAmount) || 0;
     const people = parseInt(numberOfPeople) || 0;
     
-    // Determine the tip percentage to use
     let tipPercent = tipPercentage;
     if (customTip && parseFloat(customTip) > 0) {
       tipPercent = parseFloat(customTip);
     }
     
-    // Calculate tip amount and total only if all inputs are valid
     if (bill > 0 && people > 0 && tipPercent >= 0) {
       const tipAmount = (bill * tipPercent) / 100;
       const totalBill = bill + tipAmount;
@@ -66,9 +62,13 @@ function App() {
 
   const handlePeopleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    // Only allow positive integers
-    if (value === '' || (!isNaN(parseInt(value)) && parseInt(value) > 0)) {
-      setNumberOfPeople(value);
+    setNumberOfPeople(value);
+    
+    // Show error if value is 0
+    if (value === '0') {
+      setShowPeopleError(true);
+    } else {
+      setShowPeopleError(false);
     }
   };
 
@@ -77,6 +77,7 @@ function App() {
     setTipPercentage(0);
     setCustomTip('');
     setNumberOfPeople('');
+    setShowPeopleError(false);
     setTipAmountPerPerson(0);
     setTotalPerPerson(0);
   };
@@ -149,7 +150,7 @@ function App() {
                 />
               </div>
             </div>
-            <div className="input-group">
+            <div className={`input-group ${showPeopleError ? 'error' : ''}`}>
               <label className="input-label">Number of People</label>
               <div className="input-wrapper">
                 <img src="/icon-person.svg" alt="Person" className="input-icon" />
@@ -161,6 +162,7 @@ function App() {
                   onChange={handlePeopleChange}
                 />
               </div>
+              {showPeopleError && <div className="error-message">Can't be zero</div>}
             </div>
           </div>
 
